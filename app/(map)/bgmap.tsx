@@ -1,6 +1,8 @@
-import React, { useEffect, useMemo, useRef } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import MapView, { PROVIDER_GOOGLE, LatLng } from 'react-native-maps';
 import { StyleSheet, View } from 'react-native';
+import BottomSheet from '../../components/BottomSheet';
+import FloatingNavBar from '../../components/FloatingNavBar';
 
 // Set boundary (any 4 points)
 const SQUARE: LatLng[] = [
@@ -17,6 +19,8 @@ type MapViewWithBoundaries = MapView & {
 
 export default function BGMap() {
   const mapRef = useRef<MapViewWithBoundaries | null>(null);
+  const [bottomSheetState, setBottomSheetState] = useState<'collapsed' | 'middle' | 'expanded'>('collapsed');
+  const [activeTab, setActiveTab] = useState('taxi');
 
   const { NE, SW } = useMemo(() => {
     const lats = SQUARE.map(p => p.latitude);
@@ -35,6 +39,14 @@ export default function BGMap() {
     return () => clearTimeout(t);
   }, [NE, SW]);
 
+  const handleBottomSheetStateChange = (newState: 'collapsed' | 'middle' | 'expanded') => {
+    setBottomSheetState(newState);
+  };
+
+  const handleTabPress = (tab: string) => {
+    setActiveTab(tab);
+  };
+
   return (
     <View style={styles.container}>
       <MapView
@@ -50,6 +62,15 @@ export default function BGMap() {
         // also clamp zoom with deprecated props (still work):
         minZoomLevel={10.5}
         maxZoomLevel={19}
+      />
+      <BottomSheet 
+        state={bottomSheetState}
+        onStateChange={handleBottomSheetStateChange}
+      />
+      <FloatingNavBar 
+        activeTab={activeTab}
+        onTabPress={handleTabPress}
+        bottomSheetState={bottomSheetState}
       />
     </View>
   );
